@@ -1,0 +1,18 @@
+[project]
+name = "transit34"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "Oğuz Kurt", email = "kurt.oguz@outlook.com" }
+]
+dependencies = []
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[tool.rye]
+managed = true
+virtual = true
+dev-dependencies = []
+
+[tool.rye.workspace]
+members = ["transit34_*"]

@@ -1,0 +1,20 @@
+<table id="arrivalsTable">
+    <thead>
+        <tr>
+            <th scope="col">{{ translations.line }}</th>
+            <th scope="col">{{ translations.name }}</th>
+            <th scope="col">{{ translations.minutes }}</th>
+            <th scope="col">{{ translations.bus }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for arrival in arrivals %}
+            <tr>
+                <td><a href="/lines/{{ arrival.line_code }}?route_code={{ arrival.route_code }}">{{ arrival.line_code }}</a></td>
+                <td>{{ arrival.line_name }}</td>
+                <td>{{ arrival.minutes_until_arrival }}</td>
+                <td><a href="/bus/{{ arrival.vehicle_door_no }}?route_code={{ arrival.route_code }}">{{ bus_icon|safe }}</a></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

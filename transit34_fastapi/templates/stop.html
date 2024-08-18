@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ stop_info.stop_name }} ({{ stop_info.direction }}){% endblock %}
+{% block head %}
+    {{ super() }}
+    <script src="https://unpkg.com/htmx.org@2.0.0" integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw" crossorigin="anonymous"></script>
+    <style>
+        svg.icon {
+            display: inline-block;
+            height: 18px;
+            width: 18px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+
+<h1>{{ stop_info.stop_name }} ({{ stop_info.direction }})</h1>
+
+<details>
+    <summary role="button">{{ translations.lines }}</summary>
+    <table>
+        <tbody>
+            {% for row in stop_info.lines|batch(3) %}
+                <tr>
+                    {% for line in row %}
+                        <td><a href="/lines/{{ line.line_code }}?route_code={{ line.route_code }}">{{ line.line_code }}</a></td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</details>
+<details>
+    <summary role="button">{{ translations.arrivals }}</summary>
+    <div hx-get="/partials/arrivals/{{ stop_info.stop_code }}" hx-swap="innerHTML" hx-trigger="load, every 20s">
+        <article aria-busy="true"></article>
+    </div>
+</details>
+<details>
+    <summary role="button">{{ translations.announcements }}</summary>
+    <div hx-get="/partials/announcements/stop/{{ stop_info.stop_code }}" hx-swap="innerHTML" hx-trigger="load, every 20s">
+        <article aria-busy="true"></article>
+    </div>
+</details>
+<div style="text-align: center;">
+    <a href="/"><i>{{ translations.backToHome }}</i></a>
+</div>
+{% endblock %}

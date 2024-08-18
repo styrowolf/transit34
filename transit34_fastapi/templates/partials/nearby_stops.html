@@ -1,0 +1,6 @@
+<iframe src='/map/nearby_stops/{{ lat }}/{{ lon }}' style='height: 35.5vh; width: 100%;'></iframe>
+<ul>
+    {% for stop in stops %}
+        <li><a href="/stops/{{ stop.stop_code }}" data-tooltip="{{ stop.distance }}m">{{ stop.stop_name }} ({{ stop.direction }})</a></li>
+    {% endfor %}
+</ul>

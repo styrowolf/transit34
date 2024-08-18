@@ -1,0 +1,5 @@
+<ol id="stopsPartial">
+    {% for stop in stops %}
+        <li><a href="/stops/{{ stop.stop_code }}">{{ stop.stop_name }}</a> {% if stop.live_bus %} <span data-tooltip="{{ stop.live_bus.vehicle_door_no }}"><a href="/bus/{{ stop.live_bus.vehicle_door_no }}?route_code={{ stop.live_bus.route_code }}">{{ bus_icon|safe }}</a></span>{% if stop.live_bus.stop_enter_time %} ({{ stop.live_bus.stop_enter_time }}){% endif %}{% endif %}</li>
+    {% endfor %}
+</ol>

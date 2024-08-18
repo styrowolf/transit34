@@ -1,0 +1,5 @@
+<ul>
+    {% for line in lines %}
+        <li><a href="/lines/{{ line.line_code }}">{{ line.line_code }} - {{ line.line_name }}</a></li>
+    {% endfor %}
+</ul>

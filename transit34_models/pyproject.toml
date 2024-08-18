@@ -1,0 +1,26 @@
+[project]
+name = "transit34-models"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "Oğuz Kurt", email = "kurt.oguz@outlook.com" }
+]
+dependencies = [
+    "pydantic>=2.8.2",
+]
+readme = "README.md"
+requires-python = ">= 3.12"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/transit34_models"]

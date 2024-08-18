@@ -1,0 +1,18 @@
+<div id="routePartial">
+    <h2>{{ route.route_name }}{% if opposite_route %} <span class="outline contrast" hx-on:click='updateRouteSelect("{{ opposite_route.route_code }}");' hx-get="/partials/route?route_code={{ opposite_route.route_code }}" hx-target="#routePartial">{{ switch_direction_icon|safe }}</span>{% endif %}</h2>
+    
+    <details open>
+        <summary role="button">{{ translations.map }}</summary>
+        <iframe src='/map/{{ route.route_code }}' style='height: 35.5vh; width: 100%;'></iframe>
+    </details>
+    <details>
+        <summary role="button">{{ translations.stops }}</summary>
+        <div hx-get="/partials/stops/{{ route.route_code }}" hx-swap="innerHTML" hx-trigger="load, every 20s">
+            {{ stops|safe }}
+        </div>
+    </details>
+    <details>
+        <summary role="button">{{ translations.schedule }}</summary>
+        {{ schedule|safe }}
+    </details>
+</div>
