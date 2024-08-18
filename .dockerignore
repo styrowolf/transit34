@@ -9,5 +9,8 @@ wheels/
 # venv
 .venv
 
+# ruff
+.ruff_cache
+
 # transit34
 databases/
