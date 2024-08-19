@@ -12,7 +12,6 @@
 -e file:transit34_cli
 -e file:transit34_fastapi
 -e file:transit34_models
-    # via transit34-cli
 -e file:transit34_on_api
 annotated-types==0.7.0
     # via pydantic
