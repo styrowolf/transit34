@@ -40,6 +40,8 @@ class LineStop(pydantic.BaseModel):
                 attrs["coordinates"]["y"] = row[i]
             else:
                 attrs[fields[i]] = row[i]
+
+        print(attrs)
         return LineStop(**attrs)
 
     @staticmethod
