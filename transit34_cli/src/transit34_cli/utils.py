@@ -22,7 +22,7 @@ def pydantic_model_list_dump(data: list[pydantic.BaseModel], filename):
 def get_sql_dir():
     path = os.path.dirname(os.path.abspath(__file__))
     path = Path(path)
-    return path.parent.parent / "sql"
+    return path / "sql"
 
 
 def read(filename):
