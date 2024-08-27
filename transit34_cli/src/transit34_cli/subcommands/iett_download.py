@@ -25,6 +25,7 @@ class IETTDownloadArgs:
     skip_duckdb_raw: bool = False
     skip_duckdb: bool = False
     skip_sqlite: bool = False
+    filter_out_unuseful: bool = True
 
     @staticmethod
     def from_args(args):
@@ -35,6 +36,7 @@ class IETTDownloadArgs:
             args.skip_duckdb_raw,
             args.skip_duckdb,
             args.skip_sqlite,
+            args.do_not_filter_out_unuseful
         )
 
     def configure_parser(parser: argparse.ArgumentParser):
@@ -74,6 +76,12 @@ class IETTDownloadArgs:
             "--skip-sqlite",
             action="store_true",
             help="skip loading data into sqlite3",
+        )
+
+        parser.add_argument(
+            "--do-not-filter-out-unuseful",
+            action="store_false",
+            help="do not remove stops with no lines and lines with no routes"
         )
 
         parser.set_defaults(func=main)
@@ -206,6 +214,17 @@ def load_into_sqlite_from_duckdb(duckdb_path: Path, sqlite_path: Path, strict: b
 
     print("created indexes in sqlite3!")
 
+def filter_out(duckdb_path: Path):
+    con = duckdb.connect(str(duckdb_path))
+    # remove stops with no lines
+    con.execute("DELETE FROM stops WHERE stop_code <= 0 or (SELECT COUNT(*) FROM line_stops WHERE stops.stop_code = line_stops.stop_code) = 0;")
+    # remove routes with no stops
+    con.execute("DELETE FROM routes WHERE (SELECT COUNT(*) FROM line_stops WHERE routes.route_code = line_stops.route_code) = 0;")
+    # remove lines with no stops and remove lines with no routes
+    con.execute("DELETE FROM lines WHERE (SELECT COUNT(*) FROM line_stops WHERE lines.line_code = line_stops.line_code) = 0;")
+    con.execute("DELETE FROM lines WHERE (SELECT COUNT(*) FROM routes WHERE lines.line_code = routes.line_code) = 0;")
+    con.commit()
+    con.close()
 
 def main(args):
     args = IETTDownloadArgs.from_args(args)
@@ -225,6 +244,9 @@ def main(args):
 
     if not args.skip_duckdb_raw:
         load_into_duckdb_raw(args.out_path / "iett-raw.duckdb", args.out_path)
+
+    if args.filter_out_unuseful:
+        filter_out(args.out_path / "iett.duckdb")
 
     if not args.skip_sqlite:
         load_into_sqlite_from_duckdb(

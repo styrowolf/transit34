@@ -119,7 +119,7 @@ class ProcessedDataDB:
     def stop_useful(stop_code: int) -> Optional[Stop]:
         row = (
             cursor()
-            .execute("SELECT * FROM stops WHERE stop_code = ? AND stop_code > 0 AND (SELECT COUNT(*) FROM line_stops WHERE (SELECT COUNT(*) FROM timetables WHERE timetables.route_code = line_stops.route_code) > 0) > 0", [stop_code])
+            .execute("SELECT * FROM stops WHERE stop_code = ? AND stop_code > 0", [stop_code])
             .fetchone()
         )
         if row is None:
@@ -163,7 +163,7 @@ class ProcessedDataDB:
         rows = (
             cursor()
             .execute(
-                "SELECT * FROM stops WHERE stop_name LIKE ? AND stop_code > 0 AND (SELECT COUNT(*) FROM line_stops WHERE (SELECT COUNT(*) FROM timetables WHERE timetables.route_code = line_stops.route_code) > 0) > 0 LIMIT 20",
+                "SELECT * FROM stops WHERE stop_name LIKE ? AND stop_code > 0 LIMIT 20",
                 [query],
             )
             .fetchall()
@@ -307,7 +307,7 @@ def get_all_stops_without_useless_ones() -> list[models.Stop]:
     stops = (
         cursor()
         .execute(
-            "SELECT * FROM stops WHERE stop_code > 0 AND (SELECT COUNT(*) FROM line_stops WHERE (SELECT COUNT(*) FROM timetables WHERE timetables.route_code = line_stops.route_code) > 0) > 0"
+            "SELECT * FROM stops WHERE stop_code > 0"
         )
         .fetchall()
     )
