@@ -75,7 +75,9 @@ def nearby_stops(
     for e in geoindexing.nearby_stops({"x": lon, "y": lat}, radius):
         stop_code = int(e[0])
         distance = e[1]
-        stop = ProcessedDataDB.stop(stop_code)
+        stop = ProcessedDataDB.stop_useful(stop_code)
+        if stop is None:
+            continue
         stops.append(models.NearbyStop(distance=distance, **stop.model_dump()))
 
     return stops

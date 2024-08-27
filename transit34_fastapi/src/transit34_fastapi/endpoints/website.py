@@ -602,7 +602,10 @@ def nearby_stops(lat: float, lon: float, request: Request):
     for e in geoindexing.nearby_stops({"x": lon, "y": lat}, 500):
         stop_code = int(e[0])
         distance = e[1]
-        stop = ProcessedDataDB.stop(stop_code).model_dump()
+        stop = ProcessedDataDB.stop_useful(stop_code)
+        if stop is None:
+            continue
+        stop = stop.model_dump()
         stop["distance"] = distance
         stops.append(stop)
 

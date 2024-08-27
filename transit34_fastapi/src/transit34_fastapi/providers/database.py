@@ -114,6 +114,18 @@ class ProcessedDataDB:
             .fetchone()
         )
         return Stop.alphabetic_import(row)
+    
+    @staticmethod
+    def stop_useful(stop_code: int) -> Optional[Stop]:
+        row = (
+            cursor()
+            .execute("SELECT * FROM stops WHERE stop_code = ? AND stop_code > 0 AND (SELECT COUNT(*) FROM line_stops WHERE (SELECT COUNT(*) FROM timetables WHERE timetables.route_code = line_stops.route_code) > 0) > 0", [stop_code])
+            .fetchone()
+        )
+        if row is None:
+            return None
+        else:
+            return Stop.alphabetic_import(row)
 
     @staticmethod
     def line(line_code: str) -> Line:
@@ -127,15 +139,23 @@ class ProcessedDataDB:
     @staticmethod
     def search_line(query: str) -> list[Line]:
         query = utils.query_transform(query)
-        rows = (
-            cursor()
+        c = cursor()
+        rows_code = (
+            c
             .execute(
-                "SELECT * FROM lines WHERE line_name LIKE ? OR line_code LIKE ? LIMIT 10",
-                [query, query],
+                "SELECT * FROM lines WHERE line_code LIKE ? LIMIT 20",
+                [query],
             )
             .fetchall()
         )
-        return list(map(lambda e: Line.alphabetic_import(e), rows))
+        rows_name = (
+            c
+            .execute(
+                "SELECT * FROM lines WHERE line_name LIKE ? LIMIT 20"
+            )
+        )
+        rows_code.extend(rows_name)
+        return list(map(lambda e: Line.alphabetic_import(e), rows_code))
 
     @staticmethod
     def search_stop(query: str) -> list[Stop]:
@@ -143,7 +163,7 @@ class ProcessedDataDB:
         rows = (
             cursor()
             .execute(
-                "SELECT * FROM stops WHERE stop_name LIKE ? AND stop_code > 0 AND (SELECT COUNT(*) FROM line_stops WHERE (SELECT COUNT(*) FROM timetables WHERE timetables.route_code = line_stops.route_code) > 0) > 0 LIMIT 10",
+                "SELECT * FROM stops WHERE stop_name LIKE ? AND stop_code > 0 AND (SELECT COUNT(*) FROM line_stops WHERE (SELECT COUNT(*) FROM timetables WHERE timetables.route_code = line_stops.route_code) > 0) > 0 LIMIT 20",
                 [query],
             )
             .fetchall()
