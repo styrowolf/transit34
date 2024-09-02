@@ -1,5 +1,6 @@
 import argparse
 from dataclasses import dataclass
+import json
 import os
 from pathlib import Path
 import sqlite3
@@ -26,6 +27,7 @@ class IETTDownloadArgs:
     skip_duckdb: bool = False
     skip_sqlite: bool = False
     filter_out_unuseful: bool = True
+    fix_ordering: bool = False
 
     @staticmethod
     def from_args(args):
@@ -36,7 +38,8 @@ class IETTDownloadArgs:
             args.skip_duckdb_raw,
             args.skip_duckdb,
             args.skip_sqlite,
-            args.do_not_filter_out_unuseful
+            args.do_not_filter_out_unuseful,
+            args.fix_ordering,
         )
 
     def configure_parser(parser: argparse.ArgumentParser):
@@ -81,7 +84,11 @@ class IETTDownloadArgs:
         parser.add_argument(
             "--do-not-filter-out-unuseful",
             action="store_false",
-            help="do not remove stops with no lines and lines with no routes"
+            help="do not remove stops with no lines and lines with no routes",
+        )
+
+        parser.add_argument(
+            "--fix-ordering", action="store_true", help="fix ordering of line stops"
         )
 
         parser.set_defaults(func=main)
@@ -214,17 +221,72 @@ def load_into_sqlite_from_duckdb(duckdb_path: Path, sqlite_path: Path, strict: b
 
     print("created indexes in sqlite3!")
 
+
 def filter_out(duckdb_path: Path):
     con = duckdb.connect(str(duckdb_path))
     # remove stops with no lines
-    con.execute("DELETE FROM stops WHERE stop_code <= 0 or (SELECT COUNT(*) FROM line_stops WHERE stops.stop_code = line_stops.stop_code) = 0;")
+    con.execute(
+        "DELETE FROM stops WHERE stop_code <= 0 or (SELECT COUNT(*) FROM line_stops WHERE stops.stop_code = line_stops.stop_code) = 0;"
+    )
     # remove routes with no stops
-    con.execute("DELETE FROM routes WHERE (SELECT COUNT(*) FROM line_stops WHERE routes.route_code = line_stops.route_code) = 0;")
+    con.execute(
+        "DELETE FROM routes WHERE (SELECT COUNT(*) FROM line_stops WHERE routes.route_code = line_stops.route_code) = 0;"
+    )
     # remove lines with no stops and remove lines with no routes
-    con.execute("DELETE FROM lines WHERE (SELECT COUNT(*) FROM line_stops WHERE lines.line_code = line_stops.line_code) = 0;")
-    con.execute("DELETE FROM lines WHERE (SELECT COUNT(*) FROM routes WHERE lines.line_code = routes.line_code) = 0;")
+    con.execute(
+        "DELETE FROM lines WHERE (SELECT COUNT(*) FROM line_stops WHERE lines.line_code = line_stops.line_code) = 0;"
+    )
+    con.execute(
+        "DELETE FROM lines WHERE (SELECT COUNT(*) FROM routes WHERE lines.line_code = routes.line_code) = 0;"
+    )
     con.commit()
     con.close()
+
+
+def fix_ordering(duckdb_path: Path):
+    con = duckdb.connect(str(duckdb_path))
+    line_stops = []
+
+    route_codes = list(
+        map(
+            lambda e: e[0],
+            con.execute("SELECT DISTINCT route_code FROM line_stops;").fetchall(),
+        )
+    )
+    for route_code in route_codes:
+        stops = con.execute(
+            "SELECT * FROM line_stops WHERE route_code = ?", [route_code]
+        ).fetchall()
+
+        def process(e):
+            i, stop = e
+            stop = list(stop)
+            stop[6] = i
+            return tuple(stop)
+
+        stops = list(map(lambda e: process(e), enumerate(stops)))
+        line_stops.extend(stops)
+
+    def tuple_to_dict(t):
+        keys = [
+            "coordinates",
+            "direction",
+            "line_code",
+            "line_id",
+            "route_code",
+            "route_direction",
+            "route_order",
+            "stop_code",
+            "stop_name",
+        ]
+        return dict(zip(keys, t))
+
+    json.dump(list(map(tuple_to_dict, line_stops)), open("line_stops_tmp.json", "w"))
+    con.execute("DROP TABLE line_stops;")
+    con.execute("CREATE TABLE line_stops AS SELECT * FROM 'line_stops_tmp.json';")
+    con.close()
+    os.remove("line_stops_tmp.json")
+
 
 def main(args):
     args = IETTDownloadArgs.from_args(args)
@@ -247,6 +309,9 @@ def main(args):
 
     if args.filter_out_unuseful:
         filter_out(args.out_path / "iett.duckdb")
+
+    if args.fix_ordering:
+        fix_ordering(args.out_path / "iett.duckdb")
 
     if not args.skip_sqlite:
         load_into_sqlite_from_duckdb(
