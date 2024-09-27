@@ -5,6 +5,7 @@ from transit34_on_api.env import Env
 from transit34_on_api.cache import cache
 from transit34_on_api.constants import HALF_HOUR, HALF_MINUTE
 
+
 @cache.cache(ttl=HALF_HOUR)
 def stop(stop_code: int):
     h = headers()

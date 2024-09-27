@@ -114,12 +114,14 @@ class ProcessedDataDB:
             .fetchone()
         )
         return Stop.alphabetic_import(row)
-    
+
     @staticmethod
     def stop_useful(stop_code: int) -> Optional[Stop]:
         row = (
             cursor()
-            .execute("SELECT * FROM stops WHERE stop_code = ? AND stop_code > 0", [stop_code])
+            .execute(
+                "SELECT * FROM stops WHERE stop_code = ? AND stop_code > 0", [stop_code]
+            )
             .fetchone()
         )
         if row is None:
@@ -140,20 +142,11 @@ class ProcessedDataDB:
     def search_line(query: str) -> list[Line]:
         query = utils.query_transform(query)
         c = cursor()
-        rows_code = (
-            c
-            .execute(
-                "SELECT * FROM lines WHERE line_code LIKE ? LIMIT 20",
-                [query],
-            )
-            .fetchall()
-        )
-        rows_name = (
-            c
-            .execute(
-                "SELECT * FROM lines WHERE line_name LIKE ? LIMIT 20"
-            )
-        )
+        rows_code = c.execute(
+            "SELECT * FROM lines WHERE line_code LIKE ? LIMIT 20",
+            [query],
+        ).fetchall()
+        rows_name = c.execute("SELECT * FROM lines WHERE line_name LIKE ? LIMIT 20")
         rows_code.extend(rows_name)
         return list(map(lambda e: Line.alphabetic_import(e), rows_code))
 
@@ -304,11 +297,5 @@ def get_all_stops() -> list[models.Stop]:
 
 
 def get_all_stops_without_useless_ones() -> list[models.Stop]:
-    stops = (
-        cursor()
-        .execute(
-            "SELECT * FROM stops WHERE stop_code > 0"
-        )
-        .fetchall()
-    )
+    stops = cursor().execute("SELECT * FROM stops WHERE stop_code > 0").fetchall()
     return list(map(lambda e: Stop.alphabetic_import(e), stops))

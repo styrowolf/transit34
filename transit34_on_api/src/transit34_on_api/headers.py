@@ -4,6 +4,7 @@ from transit34_on_api.cache import cache
 from transit34_on_api.constants import HALF_HOUR
 from transit34_on_api.env import Env
 
+
 @cache.cache(ttl=HALF_HOUR)
 def headers():
     headers = {
@@ -22,4 +23,3 @@ def headers():
     headers["Authorization"] = f"Bearer {access_token}"
     headers["Content-Type"] = "application/json"
     return headers
-
