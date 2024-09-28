@@ -146,7 +146,7 @@ class ProcessedDataDB:
             "SELECT * FROM lines WHERE line_code LIKE ? LIMIT 20",
             [query],
         ).fetchall()
-        rows_name = c.execute("SELECT * FROM lines WHERE line_name LIKE ? LIMIT 20")
+        rows_name = c.execute("SELECT * FROM lines WHERE line_name LIKE ? LIMIT 20", [query]).fetchall()
         rows_code.extend(rows_name)
         return list(map(lambda e: Line.alphabetic_import(e), rows_code))
 
