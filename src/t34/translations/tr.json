@@ -1,0 +1,45 @@
+{
+    "bus": "Otobüs",
+    "busNotFound": "Otobüs bulunamadı",
+    "busNotFoundExplanation": "Otobüs {vehicle_door_no} mevcut değil veya şu anda konumu bulunamıyor.",
+    "backToHome": "ana sayfaya geri dön",
+
+    "tagLine": "istanbul'da otobüs bulmanın kolay yolu",
+    "searchStops": "durak ara",
+    "searchLines": "hat ara",
+    "bottomTagLine": "istanbul'da yapılmıştır :)",
+    "searchStopsPlaceholder": "durak adı ile ara",
+    "searchLinesPlaceholder": "hat kodu veya hat adı ile ara",
+
+    "line": "Hat",
+    "route": "Güzergah",
+    "noRoutesFound": "Bu hat için güzergah bulunamadı.",
+    "announcements": "Duyurular",
+    "deparNotice": "* \"depar\" (alternatif) güzergahları işaretlemektedir",
+
+    "lines": "Hatlar",
+    "arrivals": "Gelenler",
+
+    "noLineAnnouncementsFound": "Bu hat için duyuru bulunamadı.",
+    
+    "map": "Harita",
+    "stops": "Duraklar",
+    "schedule": "Hareket Saatleri",
+
+    "hour": "Saat",
+    "minutes": "Dakika",
+
+    "information": "Bilgi",
+    "noStopAnnouncementsFound": "Bu durak için duyuru bulunamadı.",
+    "name": "Hat Adı",
+
+    "weekdays": "Hafta İçi",
+    "saturday": "Cumartesi",
+    "sunday": "Pazar",
+
+    "nearbyStops": "yakınızdaki duraklar",
+    "noLocation": "Konumunuza erişilemiyor. Yakınınızdaki durakları görmek için konumunuzu paylaşın.",
+    "tryAgain": "Tekrar deneyin",
+
+    "youAreHere": "Buradasınız"
+}

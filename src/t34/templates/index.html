@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}toplaş{% endblock %}
+{% block head %}
+    {{ super() }}
+    <style>
+        .indicator {
+            display:none;
+        }
+        .htmx-request .indicator {
+            display: block;
+        }
+        .htmx-request.indicator{
+            display: block;
+        }
+    </style>
+    <script>
+        let opened = false;
+        let userGeolocation = null;
+        function getLocation(toggle) {
+            if (toggle) {
+                if (opened) {
+                    opened = !opened;
+                    return;
+                } else {
+                    opened = !opened;
+                }
+            }
+            if (navigator.geolocation && !userGeolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    userGeolocation = {
+                        lat: position.coords.latitude,
+                        lon: position.coords.longitude
+                    };
+                    htmx.ajax('GET', `/nearby_stops/${userGeolocation.lat}/${userGeolocation.lon}`, {target:'#nearbyStops', swap:'innerHTML'});
+                });
+            } else if (userGeolocation) {
+                // we already got the user's location
+            } else {
+                // geolocation is not supported
+            }
+            console.log(userGeolocation);
+        }
+    </script>
+    <script src="https://unpkg.com/htmx.org@2.0.0" integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw" crossorigin="anonymous"></script>
+{% endblock %}
+{% block content %}
+    <h1>toplaş</h1>
+    <details>
+        <summary role="button" hx-on:click="getLocation(true);">{{ translations.nearbyStops }}</summary>
+        <article id="nearbyStops">
+           <p>{{ translations.noLocation }}</p>
+           <button onclick="getLocation(false);">{{ translations.tryAgain }}</button>
+        </article>
+    </details>
+    <details>
+        <summary role="button">{{ translations.searchStops }}</summary>
+        <article>
+            <input class="form-control" type="search" 
+            name="query" placeholder="{{ translations.searchStopsPlaceholder }}" 
+            hx-get="/search/stops" 
+            hx-trigger="input changed delay:500ms, query" 
+            hx-target="#searchResultsStops" 
+            hx-indicator="#spinnerStops" />
+            <div id="searchResultsStops"></div>
+            <article aria-busy="true" id="spinnerStops" class="indicator"></article>
+        </article>
+    </details>
+    <details>
+        <summary role="button">{{ translations.searchLines }}</summary>
+        <article>
+            <input class="form-control" type="search" 
+            name="query" placeholder="{{ translations.searchLinesPlaceholder }}" 
+            hx-get="/search/lines" 
+            hx-trigger="input changed delay:500ms, query" 
+            hx-target="#searchResultsLines" 
+            hx-indicator="#spinnerLines" />
+            <div id="searchResultsLines"></div>
+            <article aria-busy="true" id="spinnerLines" class="indicator"></article>
+        </article>
+    </details>
+    <div style="text-align: center;">
+        <p>{{ translations.bottomTagLine }}</p>
+    </div>
+{% endblock %}

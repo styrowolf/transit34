@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ line_info.line_code }} - {{ line_info.line_name }}{% endblock %}
+{% block head %}
+    {{ super() }}
+    <script src="https://unpkg.com/htmx.org@2.0.0" integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw" crossorigin="anonymous"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono&display=swap');
+
+        svg.icon {
+            display: inline-block;
+            height: 18px;
+            width: 18px;
+        }
+
+        .space-mono-regular {
+            font-family: "Space Mono", monospace;
+            font-weight: 400;
+            font-style: normal;
+        }
+    </style>
+    
+    <script>
+        function updateQueryParameters() {
+            const routeCode = document.getElementById("routeSelect").value;
+            window.history.replaceState(null, null, `?route_code=${routeCode}`); 
+        }
+
+        function updateRouteSelect(routePatternCode) {
+            const element = document.getElementById("routeSelect");
+            for (const child of element.children) {
+                if (child.value === routePatternCode) {
+                    child.selected = true;
+                } else {
+                    child.selected = false;
+                }
+            }
+            updateQueryParameters();
+        }
+    </script>
+{% endblock %}
+{% block content %}
+
+<h1>{{ line_info.line_code }} ({{ line_info.line_name }})</h1>
+
+{% if line_info.routes|length == 0 %}
+<p>{{ translations.noRoutesFound }}</p>
+<div style="text-align: center;">
+    <a href="/"><i>{{ translations.backToHome }}</i></a>
+</div>
+{% else %}
+<select id="routeSelect" name="route_code" aria-label="Select" required hx-on:change='updateQueryParameters();' hx-get="/partials/route" hx-target="#routePartial">
+    <option disabled value="">{{ translations.route }}</option>
+    {% for route in line_info.routes %}
+        <option {% if route.route_code == route_code %}selected{% endif %} value="{{ route.route_code }}">{{ route.route_name }}</option>
+    {% endfor %}
+</select>
+<details>
+    <summary>{{ translations.announcements }}</summary>
+    <div hx-get="/partials/announcements/line/{{ line_info.line_code }}" hx-swap="innerHTML" hx-trigger="load, every 20s">
+        <article aria-busy="true"></article>
+    </div>
+</details>
+{{ route_partial|safe }}
+<div style="text-align: center;">
+    <p><i>{{ translations.deparNotice }}</i></p>
+    <a href="/"><i>{{ translations.backToHome }}</i></a>
+</div>
+{% endif %}
+{% endblock %}

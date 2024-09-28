@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ translations.bus }} {{ vehicle_door_no }}{% endblock %}
+{% block head %}
+    {{ super() }}
+    <script src="https://unpkg.com/htmx.org@2.0.0" integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw" crossorigin="anonymous"></script>
+{% endblock %}
+{% block content %}
+{% if bus %}
+<h1>{{ translations.bus }} {{ vehicle_door_no }}</h1>
+<iframe src='/partial/map/bus/{{ vehicle_door_no }}{% if route_code %}?route_code={{ route_code }}{% endif %}' style='height: 85vh; width: 100%;'></iframe>
+<div style="text-align: center;">
+    <a href="/"><i>{{ translations.backToHome }}</i></a>
+</div>
+{% else %}
+<h1>{{ translations.busNotFound }}</h1>
+<p>{{ translations.busNotFoundExplanation }}</p>
+<div style="text-align: center;">
+    <a href="/"><i>{{ translations.backToHome }}</i></a>
+</div>
+{% endif %}
+{% endblock %}

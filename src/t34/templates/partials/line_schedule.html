@@ -1,0 +1,23 @@
+<article>
+    {% for section in schedule_sections %}
+        <details>
+            <summary>{{ section.title }}</summary>
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">{{ translations.hour }}</th>
+                        <th scope="col">{{ translations.minutes }}</th>
+                    </tr>
+                </thead>
+                <tbody class="space-mono-regular">
+                    {% for row in section.rows %}
+                        <tr>
+                            <td>{{ row.hour }}</td>
+                            <td>{{ row.minutes|safe }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </details>      
+    {% endfor %}
+</article>

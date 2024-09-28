@@ -1,0 +1,9 @@
+{% if announcements %}
+<ul id="lineAnnouncements">
+    {% for announcement in announcements %}
+        <li><p>{{ announcement.information }}</p></li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>{{ translations.noLineAnnouncementsFound }}</p>
+{% endif %}
