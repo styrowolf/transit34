@@ -14,3 +14,6 @@ wheels/
 
 # transit34
 databases/
+
+# valkey
+dump.rdb
