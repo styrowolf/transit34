@@ -1,5 +1,6 @@
 from typing import Optional
 import httpx
+from on_api import raw_models
 from on_api.headers import headers
 from on_api.env import Env
 from on_api.cache import cache
@@ -207,4 +208,20 @@ def nearby_stops(lat: float, lon: float, radius: float = 1):
     }
 
     resp = httpx.post(Env.SERVICE_URL, headers=h, json=payload)
+    return resp.json()
+
+# arac.iett.gov.tr
+@cache.cache(ttl=HALF_MINUTE)
+def bus_fleet():
+    resp = httpx.post("https://arac.iett.gov.tr/api/task/bus-fleet/buses")
+    return resp.json()
+
+@cache.cache(ttl=HALF_MINUTE)
+def bus_tasks(vehicle_door_no: str):
+    resp = httpx.post(f"https://arac.iett.gov.tr/api/task/getCarTasks/{vehicle_door_no}")
+    return resp.json()
+
+@cache.cache(ttl=HALF_MINUTE)
+def bus_info(vehicle_door_no: str):
+    resp = httpx.post(f"https://arac.iett.gov.tr/api/task/bus-fleet/buses/{vehicle_door_no}")
     return resp.json()

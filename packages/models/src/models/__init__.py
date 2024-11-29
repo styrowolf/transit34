@@ -17,6 +17,8 @@ from .stop_info import StopInfo
 from .route_info import RouteInfo
 from .live_bus import LiveBus
 from .live_bus_individual import LiveBusIndividual
+from .vehicle_info import VehicleInfo
+from .vehicle_task import VehicleTask
 from . import utils
 
 __all__ = [
@@ -41,4 +43,6 @@ __all__ = [
     "LiveBus",
     "LiveBusIndividual",
     "utils",
+    "VehicleInfo",
+    "VehicleTask",
 ]

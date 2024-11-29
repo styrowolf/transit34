@@ -11,6 +11,9 @@ from t34.providers.database import (
     get_stop_info,
 )
 from t34.providers.on_api import OtobusumNeredeAPI
+from on_api import raw_models as on_models
+from on_api.api_calls import bus_info, bus_tasks
+import t34.fleet as fleet
 
 app = FastAPI()
 
@@ -146,8 +149,17 @@ def stop_announcements(stop_code: int) -> list[models.StopAnnouncement]:
 
 @app.get("/live/bus/{vehicle_door_no}")
 def bus_location(vehicle_door_no: str) -> models.LiveBusIndividual:
-    return OtobusumNeredeAPI.bus_location_by_door_no(vehicle_door_no)
+    info = on_models.BusInfo.model_validate(bus_info(vehicle_door_no))
+    return models.LiveBusIndividual.from_raw(info)
 
+@app.get("/fleet")
+def get_fleet() -> list[str]:
+    return fleet.get_fleet()
+
+@app.get("/bus/{vehicle_door_no}/tasks")
+def get_bus_tasks(vehicle_door_no: str) -> list[models.VehicleTask]:
+    tasks = [on_models.BusTask.model_validate(task) for task in bus_tasks(vehicle_door_no)]
+    return [models.VehicleTask.from_raw(task) for task in tasks]
 
 @app.get(
     "/search/line",

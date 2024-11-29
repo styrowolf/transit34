@@ -590,6 +590,7 @@ dependencies = [
     { name = "models" },
     { name = "on-api" },
     { name = "redis" },
+    { name = "timeloop" },
 ]
 
 [package.metadata]
@@ -598,6 +599,7 @@ requires-dist = [
     { name = "models", editable = "packages/models" },
     { name = "on-api", editable = "packages/on_api" },
     { name = "redis", specifier = ">=5.1.0" },
+    { name = "timeloop", specifier = ">=1.0.2" },
 ]
 
 [[package]]
@@ -618,6 +620,12 @@ requires-dist = [
     { name = "models", editable = "packages/models" },
     { name = "pydantic", specifier = ">=2.9.2" },
 ]
+
+[[package]]
+name = "timeloop"
+version = "1.0.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/6a/95/3e39ee32f15a8e9dea46bb52300611a5351964eeaa393bafb0d738e90ce0/timeloop-1.0.2.tar.gz", hash = "sha256:4e716c67fe6bcadcee7ddb91e2520792426818a70f27e630cfbbbd9becc48a13", size = 2902 }
 
 [[package]]
 name = "typer"
