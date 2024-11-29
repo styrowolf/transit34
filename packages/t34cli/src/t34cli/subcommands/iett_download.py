@@ -135,7 +135,7 @@ def process_raw(raw_data: list, out_path: Path, errors: list = None):
     print("processed stops!")
     utils.pydantic_model_list_dump(stops, out_path / "stops.json")
 
-    routes = list(map(lambda pattern: models.Route.from_raw(pattern), routes_raw))
+    routes = list(filter(lambda e: e is not None, map(lambda pattern: models.Route.from_raw(pattern), routes_raw)))
     print("processed routes!")
     utils.pydantic_model_list_dump(routes, out_path / "routes.json")
 
