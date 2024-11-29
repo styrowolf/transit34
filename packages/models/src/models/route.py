@@ -56,4 +56,11 @@ class Route(pydantic.BaseModel):
 
         attrs["route_direction"] = Direction.from_int(d["GUZERGAH_YON"])
         attrs["route_name"] = utils.clean_str(d["GUZERGAH_GUZERGAH_ADI"])
-        return Route(**attrs)
+        
+        try:
+            return Route(**attrs)
+        except pydantic.ValidationError as e:
+            print(e)
+            print(d)
+            print(attrs)
+            return None
