@@ -51,7 +51,7 @@ class BusTask(BaseModel):
     routeId: Optional[int] = None
     updatedStartTime: Optional[int] = None
     lineId: Optional[int] = None
-    taskStatusCode: Optional[str] = None # A = active, B = next
+    taskStatusCode: Optional[str] = None # A = active, B = next, T = completed
     justificationId: Optional[int] = None
     lastLocationTime: Optional[int] = None
     updatedBy: Optional[str] = None

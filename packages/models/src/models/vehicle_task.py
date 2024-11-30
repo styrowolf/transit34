@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import datetime, time, timedelta, timezone
 from models import utils
 import pydantic
 from on_api import raw_models
@@ -11,7 +11,7 @@ class VehicleTask(pydantic.BaseModel):
 
     @staticmethod
     def from_raw(r: raw_models.BusTask):
-        dt = datetime.fromtimestamp(int(r.approximateStartTime / 1000))
+        dt = datetime.fromtimestamp(int(r.approximateStartTime / 1000), tz=timezone(timedelta(hours=3)))
         task_start_time = dt.time().strftime("%H:%M")
         line_code = utils.extract_line_code_from_route_code(r.routeCode)
         return VehicleTask(
