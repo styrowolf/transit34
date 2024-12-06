@@ -170,11 +170,11 @@ class ProcessedDataDB:
     def lines_on_stop(stop_code: int) -> list[LineOnStop]:
         rows = (
             cursor()
-            .execute("SELECT * FROM line_stops WHERE stop_code = ?", [stop_code])
+            .execute("SELECT * FROM line_stops INNER JOIN stops ON stops.stop_code = line_stops.stop_code WHERE line_stops.stop_code = ?", [stop_code])
             .fetchall()
         )
         candidates: list[LineStop] = list(
-            map(lambda e: LineStop.alphabetic_import(e), rows)
+            map(lambda row: SmallLineStop.alphabetic_import(tuple(list(row)[:5])).to_line_stop(Stop.alphabetic_import(tuple(list(row)[5:]))), rows)
         )
 
         candidates = list(
