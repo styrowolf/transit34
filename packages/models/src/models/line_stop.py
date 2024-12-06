@@ -1,3 +1,4 @@
+from models.stop import Stop
 import pydantic
 import models.utils as utils
 from models.coordinates import Coordinates
@@ -11,7 +12,7 @@ class LineStop(pydantic.BaseModel):
     direction: str
 
     line_code: str
-    line_id: int
+    #line_id: int
 
     route_code: str
     route_order: int
@@ -58,4 +59,34 @@ class LineStop(pydantic.BaseModel):
         attrs["route_order"] = stop["GUZERGAH_SEGMENT_SIRA"]
         attrs["route_direction"] = Direction.from_int(stop["GUZERGAH_YON"])
 
+        return LineStop(**attrs)
+
+class SmallLineStop(pydantic.BaseModel):
+    line_code: str
+    route_code: str
+    route_order: int
+    route_direction: Direction
+    stop_code: int
+
+    @staticmethod
+    def alphabetic_import(row):
+        fields = [
+            "line_code",
+            "route_code",
+            "route_direction",
+            "route_order",
+            "stop_code",
+        ]
+        
+        attrs = {}
+        for i in range(len(fields)):
+            attrs[fields[i]] = row[i]
+
+        return SmallLineStop(**attrs)
+    
+    def to_line_stop(self, stop: Stop) -> LineStop:
+        attrs = self.model_dump()
+        attrs["stop_name"] = stop.stop_name
+        attrs["coordinates"] = stop.coordinates
+        attrs["direction"] = stop.direction
         return LineStop(**attrs)

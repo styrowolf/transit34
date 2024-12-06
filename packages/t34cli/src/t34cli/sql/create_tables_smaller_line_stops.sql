@@ -16,16 +16,11 @@ CREATE TABLE stops(
 );
 
 CREATE TABLE line_stops(
-    coordinate_x REAL NOT NULL,
-    coordinate_y REAL NOT NULL,
-    direction TEXT NOT NULL,
     line_code TEXT NOT NULL,
-    line_id INT NOT NULL,
     route_code TEXT NOT NULL,
     route_direction TEXT NOT NULL,
     route_order INT NOT NULL,
-    stop_code INT NOT NULL,
-    stop_name TEXT NOT NULL
+    stop_code INT NOT NULL
 );
 
 CREATE TABLE routes(

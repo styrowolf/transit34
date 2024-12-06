@@ -22,6 +22,9 @@ app = FastAPI()
 def read_root():
     return "pt-otobus API v0.1.0"
 
+@app.get("/supported_versions")
+def supported_versions():
+    return ["1.0.0"]
 
 @app.get("/line/{line_code}/stops")
 def line_stops(

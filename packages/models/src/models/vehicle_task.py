@@ -5,6 +5,7 @@ import pydantic
 from on_api import raw_models
 
 # TODO: interpret actual from the other tasks of the vehicle
+# TODO: get starting station from line_name.split(" - ")[0]
 class VehicleTask(pydantic.BaseModel):
     line_code: str
     route_code: Optional[str]

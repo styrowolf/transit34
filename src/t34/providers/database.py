@@ -1,6 +1,7 @@
 import sqlite3
 from typing import Optional
 from models import Line, Route, LineOnStop, Stop, LineStop, TimetableTrip
+from models.line_stop import SmallLineStop
 
 from t34.env import Env
 import models
@@ -74,19 +75,21 @@ class ProcessedDataDB:
             rows = (
                 cursor()
                 .execute(
-                    "SELECT * FROM line_stops WHERE line_code = ? AND route_code = ?",
+                    "SELECT * FROM line_stops INNER JOIN stops ON stops.stop_code = line_stops.stop_code WHERE line_code = ? AND route_code = ?",
                     [line_code, route_code],
                 )
                 .fetchall()
             )
-            return list(map(lambda e: LineStop.alphabetic_import(e), rows))
+
+            return [SmallLineStop.alphabetic_import(tuple(list(row)[:5])).to_line_stop(Stop.alphabetic_import(tuple(list(row)[5:]))) for row in rows]
         else:
             rows = (
                 cursor()
-                .execute("SELECT * FROM line_stops WHERE line_code = ?", [line_code])
+                .execute("SELECT * FROM line_stops INNER JOIN stops ON stops.stop_code = line_stops.stop_code WHERE line_code = ?", [line_code])
                 .fetchall()
             )
-            return list(map(lambda e: LineStop.alphabetic_import(e), rows))
+            
+            return [SmallLineStop.alphabetic_import(tuple(list(row)[:5])).to_line_stop(Stop.alphabetic_import(tuple(list(row)[5:]))) for row in rows]
 
     @staticmethod
     def routes(line_code: str) -> list[Route]:

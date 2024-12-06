@@ -28,6 +28,7 @@ class IETTDownloadArgs:
     skip_sqlite: bool = False
     filter_out_unuseful: bool = True
     fix_ordering: bool = False
+    smaller_line_stops: bool = False
 
     @staticmethod
     def from_args(args):
@@ -40,6 +41,7 @@ class IETTDownloadArgs:
             args.skip_sqlite,
             args.do_not_filter_out_unuseful,
             args.fix_ordering,
+            args.smaller_line_stops,
         )
 
     def configure_parser(parser: argparse.ArgumentParser):
@@ -89,6 +91,10 @@ class IETTDownloadArgs:
 
         parser.add_argument(
             "--fix-ordering", action="store_true", help="fix ordering of line stops"
+        )
+
+        parser.add_argument(
+            "--smaller-line-stops", action="store_true", help="create smaller line stops table"
         )
 
         parser.set_defaults(func=main)
@@ -192,11 +198,11 @@ def load_into_duckdb_raw(duckdb_path: Path, json_path: Path):
     con.close()
 
 
-def load_into_sqlite_from_duckdb(duckdb_path: Path, sqlite_path: Path, strict: bool):
+def load_into_sqlite_from_duckdb(duckdb_path: Path, sqlite_path: Path, smaller_line_stops: bool):
     sql_dir = utils.get_sql_dir()
 
     con = sqlite3.connect(str(sqlite_path))
-    create_script = "create_tables.sql" if strict else "create_tables_nostrict.sql"
+    create_script = "create_tables.sql" if not smaller_line_stops else "create_tables_smaller_line_stops.sql"
     create_script = utils.read(sql_dir / create_script)
     con.cursor().executescript(create_script)
     con.commit()
@@ -208,7 +214,7 @@ def load_into_sqlite_from_duckdb(duckdb_path: Path, sqlite_path: Path, strict: b
     duckcon.execute(f"ATTACH DATABASE '{sqlite_path}' AS pts (TYPE SQLITE);")
     print("attached both databases to duckdb!")
 
-    import_script = utils.read(sql_dir / "import_from_duckdb.sql")
+    import_script = utils.read(sql_dir / ("import_from_duckdb.sql" if not smaller_line_stops else "import_from_duckdb_smaller_line_stops.sql"))
     duckcon.execute(import_script)
     duckcon.close()
     print("imported data to sqlite3 database!")
@@ -287,6 +293,15 @@ def fix_ordering(duckdb_path: Path):
     con.close()
     os.remove("line_stops_tmp.json")
 
+def smaller_line_stops(duckdb_path: Path):
+    con = duckdb.connect(str(duckdb_path))
+
+    con.execute("CREATE TABLE line_stops_small AS SELECT line_code, route_code, route_direction, route_order, stop_code FROM line_stops;")
+    con.execute("DROP TABLE line_stops;")
+    con.execute("ALTER TABLE line_stops_small RENAME TO line_stops;")
+
+    con.close()
+
 
 def main(args):
     args = IETTDownloadArgs.from_args(args)
@@ -313,9 +328,12 @@ def main(args):
     if args.fix_ordering:
         fix_ordering(args.out_path / "iett.duckdb")
 
+    if args.smaller_line_stops:
+        smaller_line_stops(args.out_path / "iett.duckdb")
+
     if not args.skip_sqlite:
         load_into_sqlite_from_duckdb(
-            args.out_path / "iett.duckdb", args.out_path / "iett.sqlite3", strict=False
+            args.out_path / "iett.duckdb", args.out_path / "iett.sqlite3", args.smaller_line_stops
         )
 
     utils.json_file_dump(errors, args.out_path / "errors.json")

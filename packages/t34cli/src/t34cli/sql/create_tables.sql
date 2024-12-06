@@ -4,7 +4,7 @@ CREATE TABLE timetables(
     line_code TEXT,
     route_code TEXT NOT NULL,
     time TEXT NOT NULL
-) STRICT;
+);
 
 CREATE TABLE stops(
     coordinate_x REAL NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE stops(
     stop_code INT NOT NULL,
     stop_id INT NOT NULL,
     stop_name TEXT
-) STRICT;
+);
 
 CREATE TABLE line_stops(
     coordinate_x REAL NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE line_stops(
     route_order INT NOT NULL,
     stop_code INT NOT NULL,
     stop_name TEXT NOT NULL
-) STRICT;
+);
 
 CREATE TABLE routes(
     line_code TEXT NOT NULL,
@@ -38,10 +38,10 @@ CREATE TABLE routes(
     route_direction TEXT NOT NULL,
     route_id INT NOT NULL,
     route_name TEXT NOT NULL
-) STRICT;
+);
 
 CREATE TABLE lines(
     line_code TEXT NOT NULL,
     line_id INT NOT NULL,
     line_name TEXT NOT NULL
-) STRICT;
+);
