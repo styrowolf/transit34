@@ -20,7 +20,6 @@ CREATE TABLE line_stops(
     coordinate_y REAL NOT NULL,
     direction TEXT NOT NULL,
     line_code TEXT NOT NULL,
-    line_id INT NOT NULL,
     route_code TEXT NOT NULL,
     route_direction TEXT NOT NULL,
     route_order INT NOT NULL,

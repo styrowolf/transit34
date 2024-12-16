@@ -267,7 +267,7 @@ def fix_ordering(duckdb_path: Path):
         def process(e):
             i, stop = e
             stop = list(stop)
-            stop[6] = i
+            stop[5] = i
             return tuple(stop)
 
         stops = list(map(lambda e: process(e), enumerate(stops)))
@@ -278,7 +278,6 @@ def fix_ordering(duckdb_path: Path):
             "coordinates",
             "direction",
             "line_code",
-            "line_id",
             "route_code",
             "route_direction",
             "route_order",

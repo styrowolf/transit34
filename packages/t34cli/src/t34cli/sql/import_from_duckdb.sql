@@ -7,7 +7,6 @@ INSERT INTO pts.line_stops
     coordinates.y, 
     direction,
     line_code,
-    line_id,
     route_code,
     route_direction,
     route_order,
