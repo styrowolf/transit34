@@ -24,7 +24,7 @@ def read_root():
 
 @app.get("/supported_versions")
 def supported_versions():
-    return ["1.0.0"]
+    return ["1.0.0", "1.0.1"]
 
 @app.get("/line/{line_code}/stops")
 def line_stops(
