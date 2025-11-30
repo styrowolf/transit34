@@ -1,10 +1,19 @@
 from typing import Optional
+import base64
 import httpx
 from on_api import raw_models
 from on_api.headers import headers
 from on_api.env import Env
 from on_api.cache import cache
 from on_api.constants import HALF_HOUR, HALF_MINUTE
+import base64
+import json
+import httpx
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.backends import default_backend
+import os
 
 
 @cache.cache(ttl=HALF_HOUR)
@@ -211,17 +220,159 @@ def nearby_stops(lat: float, lon: float, radius: float = 1):
     return resp.json()
 
 # arac.iett.gov.tr
+
+# utils to decode
+def ab2b64(data):
+    """Convert bytes to base64 string"""
+    return base64.b64encode(data).decode('utf-8')
+
+
+def b642ab(b64_string):
+    """Convert base64 string to bytes"""
+    return base64.b64decode(b64_string)
+
+def get_server_public_key():
+    """Fetch and import the server's public RSA key"""
+    try:
+        response = httpx.get('https://arac.iett.gov.tr/api/task/crypto/pubkey')
+        response.raise_for_status()
+        j = response.json()
+
+        # Decode the base64 DER-encoded public key
+        der_bytes = b642ab(j['key'])
+
+        # Import the public key
+        public_key = serialization.load_der_public_key(
+            der_bytes,
+            backend=default_backend()
+        )
+
+        return public_key
+    except Exception as e:
+        print(f"Error getting server public key: {e}")
+        raise
+
+
+def prepare_session():
+    """Prepare encrypted session with AES key"""
+    try:
+        # Get server's public key
+        pub_key = get_server_public_key()
+
+        # Generate AES-256 key
+        aes_key = AESGCM.generate_key(bit_length=256)
+
+        # Encrypt the AES key with RSA-OAEP
+        encrypted_key = pub_key.encrypt(
+            aes_key,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None
+            )
+        )
+
+        # Generate random IV (12 bytes for GCM)
+        iv = os.urandom(12)
+
+        return {
+            'aes': aes_key,
+            'encKey': ab2b64(encrypted_key),
+            'ivB64': ab2b64(iv)
+        }
+    except Exception as e:
+        print(f"Error preparing session: {e}")
+        raise
+
+
+def decrypt_response_if_needed(aes_key, resp_json):
+    """Decrypt response if it contains encrypted data"""
+    try:
+        if resp_json and 'data' in resp_json and 'iv' in resp_json:
+            # Decode base64 encrypted data and IV
+            ciphertext = b642ab(resp_json['data'])
+            iv = b642ab(resp_json['iv'])
+
+            # Decrypt using AES-GCM
+            aesgcm = AESGCM(aes_key)
+            plaintext = aesgcm.decrypt(iv, ciphertext, None)
+
+            # Decode and parse JSON
+            text = plaintext.decode('utf-8')
+            return json.loads(text)
+
+        return resp_json
+    except Exception as e:
+        print(f"Error decrypting response: {e}")
+        return resp_json
+
+
+def get_bus_fleet_hook():
+    """Fetch bus fleet data"""
+    try:
+        session = prepare_session()
+
+        response = httpx.post(
+            'https://arac.iett.gov.tr/api/task/bus-fleet/buses',
+            headers={'Content-Type': 'application/json'},
+            json={'encKey': session['encKey']}
+        )
+        response.raise_for_status()
+        j = response.json()
+
+        return decrypt_response_if_needed(session['aes'], j)
+    except Exception as e:
+        print(f"Error getting bus fleet: {e}")
+        return None
+
+
+def get_car_attributes_hook(door_number):
+    """Fetch car attributes by door number"""
+    try:
+        session = prepare_session()
+
+        response = httpx.post(
+            f'https://arac.iett.gov.tr/api/task/bus-fleet/buses/{door_number}',
+            headers={'Content-Type': 'application/json'},
+            json={'encKey': session['encKey']}
+        )
+        response.raise_for_status()
+        j = response.json()
+
+        return decrypt_response_if_needed(session['aes'], j)
+    except Exception as e:
+        print(f"Error getting car attributes: {e}")
+        return None
+
+
+def get_car_tasks_hook(door_number):
+    """Fetch car tasks by door number"""
+    try:
+        session = prepare_session()
+
+        response = httpx.post(
+            f'https://arac.iett.gov.tr/api/task/getCarTasks/{door_number}',
+            headers={'Content-Type': 'application/json'},
+            json={'encKey': session['encKey']}
+        )
+        response.raise_for_status()
+        j = response.json()
+
+        return decrypt_response_if_needed(session['aes'], j)
+    except Exception as e:
+        print(f"Error getting car tasks: {e}")
+        return None
+
+
+
 @cache.cache(ttl=HALF_MINUTE)
 def bus_fleet():
-    resp = httpx.post("https://arac.iett.gov.tr/api/task/bus-fleet/buses")
-    return resp.json()
+    return get_bus_fleet_hook()
 
 @cache.cache(ttl=HALF_MINUTE)
 def bus_tasks(vehicle_door_no: str):
-    resp = httpx.post(f"https://arac.iett.gov.tr/api/task/getCarTasks/{vehicle_door_no}")
-    return resp.json()
+    return get_car_tasks_hook(vehicle_door_no)
 
 @cache.cache(ttl=HALF_MINUTE)
 def bus_info(vehicle_door_no: str):
-    resp = httpx.post(f"https://arac.iett.gov.tr/api/task/bus-fleet/buses/{vehicle_door_no}")
-    return resp.json()
+    return get_car_attributes_hook(vehicle_door_no)
