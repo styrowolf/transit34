@@ -15,7 +15,6 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.backends import default_backend
 import os
 
-
 @cache.cache(ttl=HALF_HOUR)
 def stop(stop_code: int):
     h = headers()
@@ -231,23 +230,29 @@ def b642ab(b64_string):
     """Convert base64 string to bytes"""
     return base64.b64decode(b64_string)
 
+DER_BYTES = b642ab("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAy9pSv5ktuiGNvUIof18Qi8AToh97U/h6FyWIATGhjiFvG/XQmzFLrRcm+eIAb/QG6GW5mN1XYSUttjbVvS9hJH/vHq+emO//NNr3WEjE5gB1qiK8wrxhq2UtNlyjjtHE5bGTXWG5IkmrfuSqiEXvOhl2tEAXHV9hD+6WhP3e6Qeqxp1yA8BoF1UfDAaqllw0rDNiHC34bC6zepj4KEQw/YkGdmYHqANtFFb0YYO0+bmG4kh8T/LRboX25nzK/jd+8AMefQtap7hI1DXOcOVQdPK3XzKQbGJmHsqyvC4HH3AuDI2G3LAeFTi74KWjNb4mka8RppbqB2sCMnq7GQbbMQIDAQAB")
+PUBKEY = serialization.load_der_public_key(DER_BYTES, backend=default_backend())
+
 def get_server_public_key():
     """Fetch and import the server's public RSA key"""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0"
+    }
     try:
-        response = httpx.get('https://arac.iett.gov.tr/api/task/crypto/pubkey')
-        response.raise_for_status()
-        j = response.json()
+        #response = httpx.get('https://arac.iett.gov.tr/api/task/crypto/pubkey', headers=headers)
+        #response.raise_for_status()
+        #j = response.json()
 
         # Decode the base64 DER-encoded public key
-        der_bytes = b642ab(j['key'])
+        #der_bytes = b642ab(j['key'])
 
         # Import the public key
-        public_key = serialization.load_der_public_key(
-            der_bytes,
-            backend=default_backend()
-        )
+        #public_key = serialization.load_der_public_key(
+        #    DER_BYTES,
+        #    backend=default_backend()
+        #)
 
-        return public_key
+        return PUBKEY
     except Exception as e:
         print(f"Error getting server public key: {e}")
         raise
@@ -312,9 +317,14 @@ def get_bus_fleet_hook():
     try:
         session = prepare_session()
 
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0",
+            'Content-Type': 'application/json'
+        }
+
         response = httpx.post(
             'https://arac.iett.gov.tr/api/task/bus-fleet/buses',
-            headers={'Content-Type': 'application/json'},
+            headers=headers,
             json={'encKey': session['encKey']}
         )
         response.raise_for_status()
@@ -331,9 +341,14 @@ def get_car_attributes_hook(door_number):
     try:
         session = prepare_session()
 
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0",
+            'Content-Type': 'application/json'
+        }
+
         response = httpx.post(
             f'https://arac.iett.gov.tr/api/task/bus-fleet/buses/{door_number}',
-            headers={'Content-Type': 'application/json'},
+            headers=headers,
             json={'encKey': session['encKey']}
         )
         response.raise_for_status()
@@ -350,9 +365,14 @@ def get_car_tasks_hook(door_number):
     try:
         session = prepare_session()
 
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0",
+            'Content-Type': 'application/json'
+        }
+
         response = httpx.post(
             f'https://arac.iett.gov.tr/api/task/getCarTasks/{door_number}',
-            headers={'Content-Type': 'application/json'},
+            headers=headers,
             json={'encKey': session['encKey']}
         )
         response.raise_for_status()
